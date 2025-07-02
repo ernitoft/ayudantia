@@ -13,7 +13,7 @@ import { useContext, useState } from "react";
 import { AuthContext } from "@/contexts/auth/AuthContext";
 import { ArrowLeftIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-
+import { decodeJWT } from "@/helpers/decodeJWT";
 
 const formSchema = z.object({
     email: z.string().email({
@@ -54,17 +54,31 @@ export const LoginPage = () => {
             setErrorBool(false);
 
             const data_ = data.data;
+            const payload = decodeJWT(data_.token);
+            if (!payload) {
+                console.error("Error al decodificar el token:", data_.token);
+                setErrors('Error al decodificar el token.');
+                setErrorBool(true);
+                return;
+            }
+
             const user_: User = {
                 email: data_.email,
                 lastName: data_.lastName,
                 firtsName: data_.firtsName,
                 token: data_.token,
+                role: payload.role,
             }
 
-            console.log("Datos del usuario:", user_);
+            localStorage.setItem('token', data_.token);
             auth(user_);
-            router.push('/404');
-           
+
+            if (payload.role === 'Admin') {
+                router.push('/admin');
+            } else if (payload.role === 'User') {
+                router.push('/client');
+            }
+
         } catch (error: any) {
             let errorCatch = error.response.data.message;
             console.error("Error al enviar el formulario:", errorCatch);
@@ -90,7 +104,7 @@ export const LoginPage = () => {
                 </p>
 
                 <Button variant={"outline"} className="mt-4 text-blue-600" onClick={() => router.back()}>
-                    <ArrowLeftIcon/> Volver
+                    <ArrowLeftIcon /> Volver
                 </Button>
             </div>
 
@@ -143,7 +157,30 @@ export const LoginPage = () => {
                                     </div>
                                 </>
                             )}
-                            <Button type="submit">Iniciar sesión</Button>
+                            <div className="flex flex-col md:flex-row items-center justify-between mt-4">
+                                <Button type="submit">Iniciar sesión</Button>
+                                <Button
+                                    type="button"
+                                    variant={'destructive'}
+                                    onClick={() => {
+                                        form.setValue("email", "ignacio.mancilla@gmail.com");
+                                        form.setValue("password", "Pa$$word2025");
+                                    }}
+                                >
+                                    Usar Admin
+                                </Button>
+
+                                <Button
+                                    type="button"
+                                    variant='destructive'
+                                    onClick={() => {
+                                        form.setValue("email", "yerkos@gmail.com");
+                                        form.setValue("password", "StrongPassword123!");
+                                    }}
+                                >
+                                    Usar Cliente
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                     <div className="mt-4 text-sm text-center md:text-left">

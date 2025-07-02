@@ -4,7 +4,6 @@ import { ProductDialog } from "@/components/products/ProductDialog";
 import { Product } from "@/interfaces/Product";
 import { useProductStore } from "@/stores/ProductStore"
 import { useEffect, useState } from "react";
-import { Navbar } from '../../components/Navbar';
 
 
 export default function ViewProductsPage() {
@@ -21,8 +20,7 @@ export default function ViewProductsPage() {
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* Navbar */}
-            <Navbar/>
+
             
             {/* Banner */}
             <div className="relative h-64 md:h-96">
